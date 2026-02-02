@@ -33,45 +33,199 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     final screenSize = MediaQuery.of(context).size;
     final bool isMobile = screenSize.width < 850;
 
-    return Dialog(
-      insetPadding: EdgeInsets.all(isMobile ? 12 : 40),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: isMobile ? screenSize.width : 1000,
-        height: isMobile ? screenSize.height * 0.9 : 600,
-        padding: const EdgeInsets.all(24),
-        child: isMobile
-            ? Column(
-                children: [
-                  _buildCloseButton(),
-                  Expanded(
-                    child: SingleChildScrollView(
+    return DefaultTabController(
+      length: 2,
+      child: Dialog(
+        insetPadding: EdgeInsets.all(isMobile ? 12 : 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          width: isMobile ? screenSize.width : 1100,
+          height: isMobile ? screenSize.height * 0.9 : 700,
+          padding: const EdgeInsets.all(24),
+          child: isMobile
+              ? Column(
+                  children: [
+                    _buildCloseButton(),
+                    // This Expanded area contains the scrollable content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildImageCarousel(height: 350, isMobile: true),
+                            const SizedBox(height: 20),
+                            _buildProductInfo(),
+                            _buildTabSection(),
+                            const SizedBox(height: 20),
+                            const Text("QUANTITY",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                    letterSpacing: 1.2)),
+                            const SizedBox(height: 12),
+                            _buildQuantityCounter(),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Buttons are OUTSIDE the SingleChildScrollView to stay fixed
+                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: _buildActionButtons(context),
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: _buildImageCarousel(isMobile: false),
+                    ),
+                    const SizedBox(width: 30),
+                    Expanded(
+                      flex: 5,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildImageCarousel(height: 350, isMobile: true),
-                          const SizedBox(height: 20),
-                          _buildProductDetails(isMobile: true),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildProductInfo(showClose: true),
+                                  _buildTabSection(),
+                                  const SizedBox(height: 20),
+                                  const Text("QUANTITY",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                          letterSpacing: 1.2)),
+                                  const SizedBox(height: 12),
+                                  _buildQuantityCounter(),
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 40),
+                          _buildActionButtons(context),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: _buildImageCarousel(isMobile: false),
-                  ),
-                  const SizedBox(width: 30),
-                  Expanded(
-                    flex: 4,
-                    child: _buildProductDetails(isMobile: false),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
+    );
+  }
+
+  // Extracted Product Info (Title, Badge, Rating, Price)
+  Widget _buildProductInfo({bool showClose = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildBadge("OFFICIAL STORE", primaryBlue),
+            if (showClose)
+              IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(widget.product.name,
+            style: const TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, height: 1.2)),
+        const SizedBox(height: 10),
+        _buildRatingRow(),
+        const SizedBox(height: 20),
+        Text('₱${widget.product.price}',
+            style: const TextStyle(
+                color: primaryBlue, fontSize: 32, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  // Extracted Tab Section
+  Widget _buildTabSection() {
+    return Column(
+      children: [
+        const TabBar(
+          labelColor: primaryBlue,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: primaryBlue,
+          tabs: [
+            Tab(text: "DESCRIPTION"),
+            Tab(text: "SPECIFICATIONS"),
+          ],
+        ),
+        SizedBox(
+          height: 180,
+          child: TabBarView(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: SingleChildScrollView(
+                  child: Text(
+                    widget.product.description ??
+                        "No description available for this product.",
+                    style: TextStyle(color: Colors.grey[700], height: 1.5),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: _buildSpecifications(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Extracted Action Buttons
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => _handleAddToCart(context),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: primaryBlue,
+              side: const BorderSide(color: primaryBlue, width: 2),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('ADD TO CART',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              widget.onAddToCart(widget.product, _quantity);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryBlue,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('BUY NOW',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ),
+      ],
     );
   }
 
@@ -79,8 +233,7 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     return Container(
       height: height ?? double.infinity,
       decoration: BoxDecoration(
-        color: const Color(
-            0xFFF0F0F0), // Light grey background for uncropped images
+        color: const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
@@ -93,7 +246,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 widget.product.imageUrls[index],
-                // KEY CHANGE: BoxFit.contain ensures the full image is shown
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
                     const Center(child: Icon(Icons.broken_image, size: 50)),
@@ -116,78 +268,31 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     );
   }
 
-  Widget _buildProductDetails({required bool isMobile}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isMobile)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildBadge("OFFICIAL STORE", primaryBlue),
-              IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close)),
-            ],
-          ),
-        if (isMobile) _buildBadge("OFFICIAL STORE", primaryBlue),
-        const SizedBox(height: 10),
-        Text(widget.product.name,
-            style: const TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, height: 1.2)),
-        const SizedBox(height: 10),
-        _buildRatingRow(),
-        const SizedBox(height: 25),
-        Text('₱${widget.product.price}',
-            style: const TextStyle(
-                color: primaryBlue, fontSize: 32, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 25),
-        const Text("QUANTITY",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                letterSpacing: 1.2)),
-        const SizedBox(height: 12),
-        _buildQuantityCounter(),
-        const SizedBox(height: 30),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _handleAddToCart(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: primaryBlue,
-                  side: const BorderSide(color: primaryBlue, width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+  Widget _buildSpecifications() {
+    final specs = {
+      "Category": widget.product.category,
+      "Brand": "Genuine Parts",
+      "Warranty": "12 Months",
+      "Compatibility": "Universal",
+    };
+
+    return ListView(
+      shrinkWrap: true,
+      children: specs.entries
+          .map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Text("${e.key}: ",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(e.value,
+                        style: const TextStyle(
+                            fontSize: 13, color: Colors.blueGrey)),
+                  ],
                 ),
-                child: const Text('ADD TO CART',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  widget.onAddToCart(widget.product, _quantity);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('BUY NOW',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        )
-      ],
+              ))
+          .toList(),
     );
   }
 
