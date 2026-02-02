@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:auto_shop/models/product_model.dart';
 import 'package:auto_shop/app/app.locator.dart';
 import 'package:auto_shop/services/authentication_service.dart';
+import 'package:auto_shop/app/app.router.dart'; // Ensure this is imported for navigation
+import 'package:stacked_services/stacked_services.dart';
 
 class ProductQuickView extends StatefulWidget {
   final Product product;
@@ -20,6 +22,8 @@ class ProductQuickView extends StatefulWidget {
 class _ProductQuickViewState extends State<ProductQuickView> {
   final PageController _pageController = PageController();
   final _authService = locator<AuthenticationService>();
+  final _navigationService =
+      locator<NavigationService>(); // Added for direct navigation
 
   int _currentPage = 0;
   int _quantity = 1;
@@ -209,11 +213,7 @@ class _ProductQuickViewState extends State<ProductQuickView> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {
-              widget.onAddToCart(
-                  widget.product, _quantity, _authService.currentUser?.id);
-              Navigator.pop(context);
-            },
+            onPressed: () => _handleBuyNow(context), // Updated handler
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryBlue,
               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -228,6 +228,36 @@ class _ProductQuickViewState extends State<ProductQuickView> {
       ],
     );
   }
+
+  // --- HANDLERS ---
+
+  void _handleAddToCart(BuildContext context) {
+    widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Added $_quantity ${widget.product.name} to cart'),
+        backgroundColor: primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleBuyNow(BuildContext context) async {
+    // 1. Add item to cart session
+    widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
+
+    // 2. Close the quick view dialog
+    Navigator.pop(context);
+
+    // 3. Navigate directly to the Cart/Checkout page
+    // Using Stacked NavigationService to ensure clean routing
+    _navigationService.navigateTo(Routes.cartView);
+  }
+
+  // --- UI COMPONENTS ---
 
   Widget _buildImageCarousel({double? height, required bool isMobile}) {
     return Container(
@@ -297,19 +327,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
                 ),
               ))
           .toList(),
-    );
-  }
-
-  void _handleAddToCart(BuildContext context) {
-    widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
-
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added $_quantity to cart'),
-        backgroundColor: primaryBlue,
-        duration: const Duration(seconds: 2),
-      ),
     );
   }
 

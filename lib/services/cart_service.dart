@@ -27,6 +27,23 @@ class CartService with ListenableServiceMixin {
     }
   }
 
+  Future<void> updateQuantity(String productId, int quantity,
+      {String? userId}) async {
+    final index = _items.indexWhere((item) => item.product.id == productId);
+    if (index != -1) {
+      if (quantity <= 0) {
+        _items.removeAt(index);
+      } else {
+        _items[index].quantity = quantity;
+      }
+
+      if (userId != null) {
+        await syncToFirestore(userId);
+      }
+      notifyListeners();
+    }
+  }
+
   Future<void> addToCart(Product product, int quantity,
       {String? userId}) async {
     final index = _items.indexWhere((item) => item.product.id == product.id);
@@ -51,7 +68,6 @@ class CartService with ListenableServiceMixin {
     notifyListeners();
   }
 
-  // Updated to include 'specifications' and 'description' to match AuthService requirements
   Future<void> syncToFirestore(String userId) async {
     try {
       final cartData = _items
@@ -62,7 +78,7 @@ class CartService with ListenableServiceMixin {
                 'quantity': item.quantity,
                 'imageUrl': item.product.imageUrls.isNotEmpty
                     ? item.product.imageUrls.first
-                    : 'https://via.placeholder.com/150', // Fallback for 404 images
+                    : 'https://via.placeholder.com/150',
                 'category': item.product.category,
                 'description': item.product.description,
                 'specifications': item.product.specifications,
@@ -80,16 +96,22 @@ class CartService with ListenableServiceMixin {
   }
 
   double get totalPrice {
-    return _items.fold(0, (sum, item) {
+    return _items.fold(0.0, (sum, item) {
       if (!item.isSelected) return sum;
       double price =
-          double.tryParse(item.product.price.replaceAll(',', '')) ?? 0;
+          double.tryParse(item.product.price.toString().replaceAll(',', '')) ??
+              0;
       return sum + (price * item.quantity);
     });
   }
 
-  void clearCart() {
-    _items.clear();
+  /// THE FIX: Added 'onlySelected' parameter
+  void clearCart({bool onlySelected = false}) {
+    if (onlySelected) {
+      _items.removeWhere((item) => item.isSelected);
+    } else {
+      _items.clear();
+    }
     notifyListeners();
   }
 }

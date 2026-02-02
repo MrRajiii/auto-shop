@@ -169,9 +169,14 @@ class RegisterView extends StackedView<RegisterViewModel> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: viewModel.isBusy ? null : viewModel.createAccount,
+              // THE FIX: Button is only active if form is valid and not busy
+              onPressed: (viewModel.isFormValid && !viewModel.isBusy)
+                  ? viewModel.createAccount
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: legacyBlue,
+                // Color when the button is disabled (onPressed is null)
+                disabledBackgroundColor: Colors.grey.shade300,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
@@ -182,9 +187,16 @@ class RegisterView extends StackedView<RegisterViewModel> {
                       width: 20,
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2))
-                  : const Text("SIGN UP NOW",
+                  : Text(
+                      "SIGN UP NOW",
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,
+                        // Change text color based on state for better contrast
+                        color: viewModel.isFormValid
+                            ? Colors.white
+                            : Colors.grey.shade600,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 20),
@@ -195,9 +207,7 @@ class RegisterView extends StackedView<RegisterViewModel> {
                 const Text("Already have an account? ",
                     style: TextStyle(color: Colors.grey, fontSize: 13)),
                 GestureDetector(
-                  onTap: () {
-                    // Navigate to Login logic here
-                  },
+                  onTap: viewModel.navigateToLogin,
                   child: const Text(
                     "Log In",
                     style: TextStyle(

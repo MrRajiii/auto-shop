@@ -44,7 +44,7 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
                 ? Column(
                     children: [
                       _buildSummarySection(viewModel, isMobile: true),
-                      _buildPaymentSection(viewModel, isMobile: true),
+                      _buildFormAndPaymentSection(viewModel, isMobile: true),
                     ],
                   )
                 : IntrinsicHeight(
@@ -56,8 +56,8 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
                               _buildSummarySection(viewModel, isMobile: false),
                         ),
                         Expanded(
-                          child:
-                              _buildPaymentSection(viewModel, isMobile: false),
+                          child: _buildFormAndPaymentSection(viewModel,
+                              isMobile: false),
                         ),
                       ],
                     ),
@@ -96,6 +96,22 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
             ),
           ),
           const SizedBox(height: 25),
+          ...viewModel.selectedItems.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Text("${item.quantity}x",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: legacyBlue)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: Text(item.product.name,
+                            style: const TextStyle(fontSize: 13))),
+                    Text("₱${item.product.price}"),
+                  ],
+                ),
+              )),
+          const Divider(height: 40, color: Colors.orangeAccent),
           _priceRow("Subtotal", "₱${viewModel.totalPrice}"),
           _priceRow("Shipping", "FREE"),
           const Divider(height: 40, color: Colors.orangeAccent),
@@ -106,7 +122,7 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
           ),
           const SizedBox(height: 40),
           const Text(
-            "Shipping / Pick-up Details:",
+            "Quick Note:",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 12,
@@ -114,24 +130,16 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.location_on, size: 16, color: Colors.orange),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  viewModel.userAddress,
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 13),
-                ),
-              ),
-            ],
+          const Text(
+            "Please ensure your contact details are correct so we can reach you regarding your order status.",
+            style: TextStyle(color: Colors.blueGrey, fontSize: 13),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentSection(CheckoutViewModel viewModel,
+  Widget _buildFormAndPaymentSection(CheckoutViewModel viewModel,
       {required bool isMobile}) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 24 : 40),
@@ -139,17 +147,51 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Payment Method",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            "Shipping Details",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 20),
+          _buildTextField(
+            label: "Full Name",
+            hint: "Enter your full name",
+            icon: Icons.person_outline,
+            // VALIDATION: Show error if submission failed and field is empty
+            errorText: viewModel.showValidationErrors && !viewModel.isNameValid
+                ? "Name is required"
+                : null,
+            onChanged: (val) => viewModel.updateName(val),
+          ),
+          const SizedBox(height: 15),
+          _buildTextField(
+            label: "Phone Number",
+            hint: "09XX XXX XXXX",
+            icon: Icons.phone_android_outlined,
+            keyboardType: TextInputType.phone,
+            // VALIDATION: Basic length check for PH numbers
+            errorText: viewModel.showValidationErrors && !viewModel.isPhoneValid
+                ? "Valid 10+ digit number required"
+                : null,
+            onChanged: (val) => viewModel.updatePhone(val),
+          ),
+          const SizedBox(height: 15),
+          _buildTextField(
+            label: "Complete Address",
+            hint: "Street, Brgy, City, Province",
+            icon: Icons.location_on_outlined,
+            maxLines: 2,
+            // VALIDATION: Check if empty
+            errorText:
+                viewModel.showValidationErrors && !viewModel.isAddressValid
+                    ? "Complete address is required"
+                    : null,
+            onChanged: (val) => viewModel.updateAddress(val),
+          ),
+          const SizedBox(height: 30),
           const Text(
-            "Choose your preferred payment method",
-            style: TextStyle(color: Colors.grey, fontSize: 13),
+            "Payment Method",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 15),
           _paymentOption(
             title: "Cash at Shop",
             subtitle: "Pay at the counter upon pickup",
@@ -159,7 +201,7 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
           const SizedBox(height: 15),
           _paymentOption(
             title: "Cash on Delivery",
-            subtitle: "Coming Soon",
+            subtitle: "Currently unavailable",
             icon: Icons.local_shipping_outlined,
             isActive: false,
           ),
@@ -190,6 +232,52 @@ class CheckoutView extends StackedView<CheckoutViewModel> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    String? errorText, // ADDED: New parameter for validation message
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    required Function(String) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+        const SizedBox(height: 6),
+        TextField(
+          onChanged: onChanged,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hint,
+            errorText: errorText, // ADDED: Connect to TextField error state
+            hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+            prefixIcon: Icon(icon, size: 20, color: legacyBlue),
+            filled: true,
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.all(12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            // Style for the error message
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
