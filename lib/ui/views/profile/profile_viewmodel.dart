@@ -52,11 +52,12 @@ class ProfileViewModel extends ReactiveViewModel {
   }
 
   // UPDATED: Navigates to HomeView and wipes the navigation history
-  Future<void> logout() async {
-    await _authService.logout();
+  void logout() {
+    // We don't need to 'await' here anymore because the service
+    // clears state instantly and Firebase works in the background.
+    _authService.logout();
 
-    // Using clearStackAndShow ensures the user can't press 'back' to see the profile again
-    // We point this to homeView as requested
+    // Navigate immediately
     _navigationService.clearStackAndShow(Routes.homeView);
   }
 }

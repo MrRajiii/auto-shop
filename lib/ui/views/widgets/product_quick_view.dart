@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:auto_shop/models/product_model.dart';
+import 'package:auto_shop/app/app.locator.dart';
+import 'package:auto_shop/services/authentication_service.dart';
 
 class ProductQuickView extends StatefulWidget {
   final Product product;
-  final Function(Product, int) onAddToCart;
+  final Function(Product, int, String? userId) onAddToCart;
 
   const ProductQuickView({
     Key? key,
@@ -17,6 +19,8 @@ class ProductQuickView extends StatefulWidget {
 
 class _ProductQuickViewState extends State<ProductQuickView> {
   final PageController _pageController = PageController();
+  final _authService = locator<AuthenticationService>();
+
   int _currentPage = 0;
   int _quantity = 1;
 
@@ -46,7 +50,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
               ? Column(
                   children: [
                     _buildCloseButton(),
-                    // This Expanded area contains the scrollable content
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
@@ -69,7 +72,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
                         ),
                       ),
                     ),
-                    // Buttons are OUTSIDE the SingleChildScrollView to stay fixed
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -121,7 +123,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     );
   }
 
-  // Extracted Product Info (Title, Badge, Rating, Price)
   Widget _buildProductInfo({bool showClose = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +152,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     );
   }
 
-  // Extracted Tab Section
   Widget _buildTabSection() {
     return Column(
       children: [
@@ -189,7 +189,6 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     );
   }
 
-  // Extracted Action Buttons
   Widget _buildActionButtons(BuildContext context) {
     return Row(
       children: [
@@ -211,7 +210,8 @@ class _ProductQuickViewState extends State<ProductQuickView> {
         Expanded(
           child: ElevatedButton(
             onPressed: () {
-              widget.onAddToCart(widget.product, _quantity);
+              widget.onAddToCart(
+                  widget.product, _quantity, _authService.currentUser?.id);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -247,8 +247,9 @@ class _ProductQuickViewState extends State<ProductQuickView> {
               child: Image.network(
                 widget.product.imageUrls[index],
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Center(child: Icon(Icons.broken_image, size: 50)),
+                errorBuilder: (context, error, stackTrace) => const Center(
+                    child:
+                        Icon(Icons.broken_image, size: 50, color: Colors.grey)),
               ),
             ),
           ),
@@ -269,12 +270,15 @@ class _ProductQuickViewState extends State<ProductQuickView> {
   }
 
   Widget _buildSpecifications() {
-    final specs = {
-      "Category": widget.product.category,
-      "Brand": "Genuine Parts",
-      "Warranty": "12 Months",
-      "Compatibility": "Universal",
-    };
+    final productSpecs = widget.product.specifications ?? {};
+    final specs = productSpecs.isNotEmpty
+        ? productSpecs
+        : {
+            "Category": widget.product.category,
+            "Brand": "Genuine Parts",
+            "Warranty": "12 Months",
+            "Compatibility": "Universal",
+          };
 
     return ListView(
       shrinkWrap: true,
@@ -297,7 +301,8 @@ class _ProductQuickViewState extends State<ProductQuickView> {
   }
 
   void _handleAddToCart(BuildContext context) {
-    widget.onAddToCart(widget.product, _quantity);
+    widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
+
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -4,13 +4,13 @@ import '../../../app/app.locator.dart';
 import '../../../app/app.router.dart';
 import '../../../models/product_model.dart';
 import '../../../services/cart_service.dart';
-import '../../../services/authentication_service.dart'; // ADD THIS
+import '../../../services/authentication_service.dart';
 import '../../../models/user_model.dart';
 
 class HomeViewModel extends ReactiveViewModel {
   final _navigationService = locator<NavigationService>();
   final _cartService = locator<CartService>();
-  final _authService = locator<AuthenticationService>(); // ADD THIS
+  final _authService = locator<AuthenticationService>();
 
   String _searchQuery = '';
   String _selectedCategory = 'All';
@@ -25,7 +25,7 @@ class HomeViewModel extends ReactiveViewModel {
 
   @override
   List<ListenableServiceMixin> get listenableServices =>
-      [_cartService, _authService]; // Listen to Auth changes too
+      [_cartService, _authService];
 
   // Logic to filter products based on search query AND category
   List<Product> get filteredProducts {
@@ -60,7 +60,6 @@ class HomeViewModel extends ReactiveViewModel {
   }
 
   // --- MOCK DATA ---
-  // --- MOCK DATA ---
   List<Product> products = [
     Product(
       id: '1',
@@ -69,7 +68,7 @@ class HomeViewModel extends ReactiveViewModel {
       category: 'Oil',
       isFeatured: true,
       description:
-          'Engineered for high-performance engines to provide extreme temperature protection.', // ADDED THIS
+          'Engineered for high-performance engines to provide extreme temperature protection.',
       specifications: {
         'Viscosity': '5W-40',
         'Volume': '4 Liters',
@@ -87,8 +86,7 @@ class HomeViewModel extends ReactiveViewModel {
       price: '850',
       category: 'Brakes',
       isFeatured: false,
-      description:
-          'Upgrade your stopping power with low-dust ceramic formula.', // ADDED THIS
+      description: 'Upgrade your stopping power with low-dust ceramic formula.',
       specifications: {
         'Material': 'Premium Ceramic',
         'Compatibility': 'Universal Fit V.1'
@@ -104,7 +102,7 @@ class HomeViewModel extends ReactiveViewModel {
       category: 'Tools',
       isFeatured: true,
       description:
-          'A comprehensive 82-piece tool kit made from Chrome Vanadium Steel.', // ADDED THIS
+          'A comprehensive 82-piece tool kit made from Chrome Vanadium Steel.',
       specifications: {
         'Pieces': '82 Items',
         'Material': 'Chrome Vanadium Steel'
@@ -129,8 +127,10 @@ class HomeViewModel extends ReactiveViewModel {
   // --- CART LOGIC ---
   int get cartItemCount => _cartService.items.length;
 
-  void addToCart(Product product, int quantity) {
-    _cartService.addToCart(product, quantity);
+  // FIXED: Added {String? userId} as a named parameter to fix the compilation error
+  // and passed it to the CartService to enable Firestore synchronization.
+  void addToCart(Product product, int quantity, {String? userId}) {
+    _cartService.addToCart(product, quantity, userId: userId);
     notifyListeners();
   }
 }

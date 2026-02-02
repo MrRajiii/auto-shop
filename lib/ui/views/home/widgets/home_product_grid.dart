@@ -27,7 +27,6 @@ class HomeProductGrid extends StatelessWidget {
                 : 2;
 
     // Adjust ratio for mobile vs desktop to prevent squashed text
-    // 2 columns need more height (smaller ratio) than 6 columns
     double aspectRatio = screenWidth > 600 ? 0.75 : 0.68;
 
     return Padding(
@@ -51,8 +50,9 @@ class HomeProductGrid extends StatelessWidget {
                 context: context,
                 builder: (context) => ProductQuickView(
                   product: product,
-                  onAddToCart: (p, quantity) {
-                    viewModel.addToCart(p, quantity);
+                  // FIXED: Added the third parameter (userId) to match the new signature
+                  onAddToCart: (p, quantity, userId) {
+                    viewModel.addToCart(p, quantity, userId: userId);
                   },
                 ),
               );
@@ -99,7 +99,8 @@ class HomeProductGrid extends StatelessWidget {
             const SizedBox(height: 24),
             TextButton.icon(
               onPressed: () {
-                // You could add a clear filters method in your viewmodel
+                // Accessing the clear method in viewmodel
+                viewModel.setCategory('All');
               },
               icon: const Icon(Icons.refresh),
               label: const Text("Clear all filters"),
