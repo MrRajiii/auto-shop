@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "951154264571",
+    "project_id": "auto-shop-web",
+    "storage_bucket": "auto-shop-web.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951154264571:android:c34bc9e7eb21bbc2d3e35e",
+        "android_client_info": {
+          "package_name": "com.example.auto_shop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6RXywPwTp2UzCz10yjT95lsYwOmlqYF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
