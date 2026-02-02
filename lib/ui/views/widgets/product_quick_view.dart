@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_shop/models/product_model.dart';
 import 'package:auto_shop/app/app.locator.dart';
 import 'package:auto_shop/services/authentication_service.dart';
-import 'package:auto_shop/app/app.router.dart'; // Ensure this is imported for navigation
+import 'package:auto_shop/app/app.router.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 class ProductQuickView extends StatefulWidget {
@@ -22,8 +22,7 @@ class ProductQuickView extends StatefulWidget {
 class _ProductQuickViewState extends State<ProductQuickView> {
   final PageController _pageController = PageController();
   final _authService = locator<AuthenticationService>();
-  final _navigationService =
-      locator<NavigationService>(); // Added for direct navigation
+  final _navigationService = locator<NavigationService>();
 
   int _currentPage = 0;
   int _quantity = 1;
@@ -34,6 +33,31 @@ class _ProductQuickViewState extends State<ProductQuickView> {
   void _increment() => setState(() => _quantity++);
   void _decrement() {
     if (_quantity > 1) setState(() => _quantity--);
+  }
+
+  // Navigation logic for arrows
+  void _nextPage() {
+    if (_currentPage < widget.product.imageUrls.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _prevPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -213,7 +237,7 @@ class _ProductQuickViewState extends State<ProductQuickView> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: () => _handleBuyNow(context), // Updated handler
+            onPressed: () => _handleBuyNow(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryBlue,
               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -229,11 +253,8 @@ class _ProductQuickViewState extends State<ProductQuickView> {
     );
   }
 
-  // --- HANDLERS ---
-
   void _handleAddToCart(BuildContext context) {
     widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
-
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -246,20 +267,14 @@ class _ProductQuickViewState extends State<ProductQuickView> {
   }
 
   void _handleBuyNow(BuildContext context) async {
-    // 1. Add item to cart session
     widget.onAddToCart(widget.product, _quantity, _authService.currentUser?.id);
-
-    // 2. Close the quick view dialog
     Navigator.pop(context);
-
-    // 3. Navigate directly to the Cart/Checkout page
-    // Using Stacked NavigationService to ensure clean routing
     _navigationService.navigateTo(Routes.cartView);
   }
 
-  // --- UI COMPONENTS ---
-
   Widget _buildImageCarousel({double? height, required bool isMobile}) {
+    final hasMultipleImages = widget.product.imageUrls.length > 1;
+
     return Container(
       height: height ?? double.infinity,
       decoration: BoxDecoration(
@@ -283,8 +298,49 @@ class _ProductQuickViewState extends State<ProductQuickView> {
               ),
             ),
           ),
+
+          // LEFT ARROW
+          if (hasMultipleImages && _currentPage > 0)
+            Positioned(
+              left: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNavArrow(Icons.arrow_back_ios_new, _prevPage),
+              ),
+            ),
+
+          // RIGHT ARROW
+          if (hasMultipleImages &&
+              _currentPage < widget.product.imageUrls.length - 1)
+            Positioned(
+              right: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNavArrow(Icons.arrow_forward_ios, _nextPage),
+              ),
+            ),
+
           _buildCarouselDots(),
         ],
+      ),
+    );
+  }
+
+  // Helper for Arrow UI
+  Widget _buildNavArrow(IconData icon, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 4, spreadRadius: 1)
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: primaryBlue, size: 20),
+        onPressed: onTap,
       ),
     );
   }
@@ -388,12 +444,14 @@ class _ProductQuickViewState extends State<ProductQuickView> {
         const SizedBox(width: 12),
         const Text('|', style: TextStyle(color: Colors.grey)),
         const SizedBox(width: 12),
-        const Text('1.8k Sold', style: TextStyle(color: Colors.grey)),
+        const Text('1 Sold', style: TextStyle(color: Colors.grey)),
       ],
     );
   }
 
   Widget _buildCarouselDots() {
+    if (widget.product.imageUrls.length <= 1) return const SizedBox.shrink();
+
     return Positioned(
       bottom: 20,
       left: 0,

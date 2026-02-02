@@ -63,52 +63,57 @@ class HomeViewModel extends ReactiveViewModel {
   List<Product> products = [
     Product(
       id: '1',
-      name: 'Full Synthetic Oil 5W-40 Premium Protection',
-      price: '1,250',
-      category: 'Oil',
+      name:
+          'Hydraulic Floor Jack 2Ton Crocodile Jack Low Lifting Quick Pump Lifting Car',
+      price: '1,999',
+      category: 'Tools',
       isFeatured: true,
       description:
-          'Engineered for high-performance engines to provide extreme temperature protection.',
+          '2T horizontal jack, for home use, or for auto repair shops.\nHydraulics use the liquid power that is taken from the applied force to move certain things using the same force. In terms of the floor jack, the liquid pressure is added when we push the handle downwards while the jack lifts the vehicle upwards. When a person lifts the jacks handle, the pump piston moves upwards.',
       specifications: {
-        'Viscosity': '5W-40',
-        'Volume': '4 Liters',
-        'Engine Type': 'Gasoline & Diesel',
-        'Certification': 'API SN/CF',
-        'Performance': 'Extreme Temp Guard'
+        'Stock': 'IN STOCK',
+        'Brand': 'Seametal',
+        'Condition': 'Brand New',
       },
       imageUrls: [
-        'https://images.pexels.com/photos/2051034/pexels-photo-2051034.jpeg'
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7rasc-m2m0vb5lcv7jfa.webp',
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7rasg-m2m0vb5vcglb77.webp',
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7ras9-m2m0vb5le9yq18.webp',
       ],
     ),
     Product(
       id: '2',
-      name: 'High Performance Ceramic Brake Pads',
-      price: '850',
-      category: 'Brakes',
+      name: 'AUTOMATIC TRANSMISSION FLUID ATF DW-1 / ATF DW1 1L HONDA GENUINE',
+      price: '499',
+      category: 'Oil',
       isFeatured: false,
-      description: 'Upgrade your stopping power with low-dust ceramic formula.',
-      specifications: {
-        'Material': 'Premium Ceramic',
-        'Compatibility': 'Universal Fit V.1'
-      },
+      description:
+          'AUTOMATIC TRANSMISSION FLUID ATF DW-1 / ATF DW1 1L HONDA GENUINE PART NO: 08268-P99-1BS1/100% ORIGINAL',
+      specifications: {'Brand': 'Honda', 'Stock': 'IN STOCK'},
       imageUrls: [
-        'https://images.pexels.com/photos/5634621/pexels-photo-5634621.jpeg'
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7r98q-lw2w0sfnwkck00.webp',
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7r98u-lw2w0sfo26mc6a.webp',
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7r98s-lw2w0sfo0s1w53.webp',
       ],
     ),
     Product(
       id: '3',
-      name: 'Heavy Duty Tool Set',
-      price: '2,450',
-      category: 'Tools',
+      name:
+          'Toyota AT FLUID T-IV 4L ATF Automatic Transmission Oil For Toyota Innova Fortuner Hilux Car 4Liters',
+      price: '1,499',
+      category: 'Oil',
       isFeatured: true,
       description:
-          'A comprehensive 82-piece tool kit made from Chrome Vanadium Steel.',
+          'This fluid is designed to keep your vehicle running at its best. Enjoy long-lasting protection against wear and corrosion, thanks to advanced additives that help maintain the health of your transmission system.',
       specifications: {
-        'Pieces': '82 Items',
-        'Material': 'Chrome Vanadium Steel'
+        'Brand': 'Toyota',
+        'Stock': 'IN STOCK',
+        'Capacity': '4L',
       },
       imageUrls: [
-        'https://images.pexels.com/photos/162460/wrench-nuts-screws-chisel-162460.jpeg'
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7r991-lp3mefdle34f85.webp',
+        'https://down-ph.img.susercontent.com/file/ph-11134207-7ras9-ma8a76agaf3i1d.webp',
+        'https://down-ph.img.susercontent.com/file/sg-11134253-81zu9-mim62wolz01sd3.webp',
       ],
     ),
   ];
